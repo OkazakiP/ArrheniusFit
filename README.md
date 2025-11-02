@@ -156,7 +156,7 @@ $$ m(t, T) = v_s S + v_c C = \frac{k v_s \alpha + v_c \alpha \beta' e^{k \alpha 
 
 #### 多段階型
 
-$ S \xrightarrow{k_1} P \xrightarrow{k_2} C$の反応を考えます．逆反応は考えません．反応速度の連立方程式は次の通りです．
+$ S \overset{k_1}{\longrightarrow} P \xrightarrow{k_2} C$の反応を考えます．逆反応は考えません．反応速度の連立方程式は次の通りです．
 
 $$
 \begin{cases}
