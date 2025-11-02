@@ -14,11 +14,11 @@ Fit material performance depends on time (month, day) and temperature.
 
 $$
 \begin{cases}
-\begin{align}
-m &= v C \\
--\frac{dC}{dt} &= kC \\
-k &= A \times exp(-E_a/RT)
-\end{align}
+\begin{alignedat}{3}
+m &= v C &&(1)\\
+-\frac{dC}{dt} &= kC &&(2)\\
+k &= A \times exp(-E_a/RT) &&(3)
+\end{alignedat}
 \end{cases}
 $$
 
@@ -156,19 +156,19 @@ $$ m(t, T) = v_s S + v_c C = \frac{k v_s \alpha + v_c \alpha \beta' e^{k \alpha 
 
 #### 多段階型
 
-$S$ --( $k_1$ )--> P --( $k_2$ )--> $C$ の反応を考えます．逆反応は考えません．反応速度の連立方程式は次の通りです．
+$S$ --( $k_1$ )--> $P$ --( $k_2$ )--> $C$ の反応を考えます．逆反応は考えません．反応速度の連立方程式は次の通りです．
 
 $$
 \begin{cases}
-\begin{align}
--\frac{dS}{dt} &= k_1 S \\
-\frac{dP}{dt} &= -\frac{dS}{dt} - \frac{dC}{dt} \\
-\frac{dC}{dt} &= k_2 P
-\end{align}
+\begin{alignedat}{3}
+-\frac{dS}{dt} &= k_1 S &&(4)\\
+\frac{dP}{dt} &= -\frac{dS}{dt} - \frac{dC}{dt} &&(5)\\
+\frac{dC}{dt} &= k_2 P &&(6)
+\end{alignedat}
 \end{cases}
 $$
 
-(4)式が $ S $ の初期値を $ S_0 $ として $ S = S_0 e^{-k_1t} $ と解かれるのは[上記](#通常のアレニウスプロットの定式化)の通りです．これと(6)式を(5)式に代入して整理します．
+(4)式が $S$ の初期値を $S_0$ として $S = S_0 e^{-k_1t}$ と解かれるのは[上記](#通常のアレニウスプロットの定式化)の通りです．これと(6)式を(5)式に代入して整理します．
 
 $$
 \frac{dP}{dt} = k_1 S_0 e^{-k_1t} - k_2 P
