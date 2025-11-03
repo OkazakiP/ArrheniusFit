@@ -22,6 +22,16 @@ class Model:
     
     Attributes
     ----------
+    model_reaction: callable
+        Right-hand side of the system, (dC1/dt, dC2/dt, ..., dCn/dt).
+        The calling signature is `model_reaction(t, C)`, where t
+        is a scaler and `C` is an ndarray.
+    n_reaction_step: int
+        The number of reactions. k1, k2, ..., k_n.
+    model_property: callable
+        Function that predicts chemical property.
+    n_species: int
+        The number of chemical species. C1, C2, ..., Cn.
     params_reaction: array-like
         Arguments for reaction method.
     params_property: array-like
@@ -40,7 +50,7 @@ class Model:
     life(prop, T, params_reaction=None, params_property=None)
         Predict how the property would take to reach `prop` in the temperature.
     """
-    def __init__(self, model_reaction, n_reaction_step, model_property):
+    def __init__(self, model_reaction, n_reaction_step, model_property, n_species):
         """
         Parameters
         ----------
@@ -52,23 +62,41 @@ class Model:
             The number of reactions. k1, k2, ..., k_n.
         model_property: callable
             Function that predicts chemical property.
+        n_species: int
+            The number of chemical species. C1, C2, ..., Cn.
         """
-        self._model_reaction = model_reaction
+        self.model_reaction = model_reaction
         self.n_reaction_step = n_reaction_step
-        self._model_property = model_property
+        self.model_property = model_property
+        self.n_species = n_species
 
     def fit(self, data: pd.DataFrame):
+        """Fit parameters of `reaction` and `property method.
+        
+        Parameters
+        ----------
+        data: pd.DataFrame
+            Measurement data.
+        """
         def total_loss(params):
-            A = params[:self.n_reaction_step]
-            Ea = params[self.n_reaction_step: self.n_reaction_step*2]
-            p = params[self.n_reaction_step*2:]
+            C0 = params[:self.n_species]
+            A = params[self.n_species:self.n_species+self.n_reaction_step]
+            Ea = params[self.n_species+self.n_reaction_step: self.n_species+self.n_reaction_step*2]
+            p = params[self.n_species+self.n_reaction_step*2:]
             loss = 0
             for T, group in data.groupby('T'):
                 t = group['time']
-                obs = group['observed']
+                t_data = np.logspace(0, np.ceil(np.log10(t.max())), 1000)
+                if t.min() < t_data.min():
+                    t_data = np.concat([t.min(), t_data])
+                obs = group.set_index('time')['observed'].sort_index()
                 sol = solve_ivp(
-                    self._model_reaction, [t.min(), t.max()], [C0], t_eval=t_data, args=(A, Ea, T))
+                    self.model_reaction, [t_data[0], t_data[-1]], C0,
+                    t_eval=t_data, args=(A, Ea, T)
+                )
                 C_pred = sol.y[0]
+                # 数値解を求める時に測定した実際の時間を含める必要がある
+                # ただし実際の測定時間だけだと数値解を求めるには刻み間隔が広すぎる
                 loss += np.sum((C_pred - C_obs)**2)
             return loss
 
