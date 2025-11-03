@@ -87,17 +87,19 @@ class Model:
             for T, group in data.groupby('T'):
                 t = group['time']
                 t_data = np.logspace(0, np.ceil(np.log10(t.max())), 1000)
-                if t.min() < t_data.min():
-                    t_data = np.concat([t.min(), t_data])
+                t_data = np.concat([t.unique(), t_data])
+                t_data = np.sort(np.array(set(t_data)))
                 obs = group.set_index('time')['observed'].sort_index()
                 sol = solve_ivp(
                     self.model_reaction, [t_data[0], t_data[-1]], C0,
                     t_eval=t_data, args=(A, Ea, T)
                 )
-                C_pred = sol.y[0]
-                # 数値解を求める時に測定した実際の時間を含める必要がある
-                # ただし実際の測定時間だけだと数値解を求めるには刻み間隔が広すぎる
-                loss += np.sum((C_pred - C_obs)**2)
+                C_pred = sol.y
+                P_pred = (
+                    pd.Series(self.model_property(C_pred), index=t_data)
+                    .rename_axis('time', axis=0)
+                )
+                loss += obs.sub(P_pred, fill_value=0.).pipe(lambda s: s**2).sum()
             return loss
 
         res = minimize(total_loss, x0=[1.0, 4000.0])
