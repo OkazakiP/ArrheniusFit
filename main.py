@@ -82,7 +82,7 @@ class Model:
             C0 = params[:self.n_species]
             A = params[self.n_species:self.n_species+self.n_reaction_step]
             Ea = params[self.n_species+self.n_reaction_step: self.n_species+self.n_reaction_step*2]
-            p = params[self.n_species+self.n_reaction_step*2:]
+            params_property = params[self.n_species+self.n_reaction_step*2:]
             loss = 0
             for T, group in data.groupby('T'):
                 t = group['time']
@@ -96,7 +96,7 @@ class Model:
                 )
                 C_pred = sol.y
                 P_pred = (
-                    pd.Series(self.model_property(C_pred), index=t_data)
+                    pd.Series(self.model_property(C_pred, *params_property), index=t_data)
                     .rename_axis('time', axis=0)
                 )
                 loss += obs.sub(P_pred, fill_value=0.).pipe(lambda s: s**2).sum()
